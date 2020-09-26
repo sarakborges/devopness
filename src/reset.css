@@ -69,6 +69,10 @@ article > * + * {
 }
 
 /* Inherit fonts for inputs and buttons */
+button {
+  cursor: pointer;
+}
+
 input,
 button,
 textarea,

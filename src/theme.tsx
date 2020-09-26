@@ -1,9 +1,8 @@
 const Theme = {
-  dark: "#000",
+  dark: "#15202b",
   light: "#fff",
 
-  mainfont: `"Open Sans", sans-serif`,
-  googlemainfont: `"Open+Sans:300,400,600,700,800"`,
+  mainfont: `'Roboto', serif`,
 };
 
 export default Theme;

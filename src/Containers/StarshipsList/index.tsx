@@ -1,5 +1,5 @@
 // React
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useState } from "react";
 
 // Constants
 import { timeStrToNum } from "consts";
@@ -14,12 +14,20 @@ import SWAPI from "Apis/SWAPI";
 import Container from "Components/Container";
 
 // Styles
-import {} from "./style";
+import {
+  GetDistanceWrapper,
+  GetDistance,
+  GetDistanceInput,
+  GetDistanceSubmit,
+  StarshipsListWrapper,
+  StarshipItem,
+} from "./style";
 
 // Container StarshipsList
 const StarshipsList = () => {
   // Attributes
   const { state, dispatch } = useContext(AppContext);
+  const [distanceStr, setDistanceStr] = useState<string>("");
 
   // Functions
   const getStarships = async () => {
@@ -44,6 +52,10 @@ const StarshipsList = () => {
   };
 
   const getStops = (starship: any) => {
+    if (!distanceStr) {
+      return "Impossível calcular";
+    }
+
     if (starship.consumables !== "unknown" && starship.MGLT !== "unknown") {
       const consumables = starship.consumables.split(" ");
 
@@ -61,15 +73,17 @@ const StarshipsList = () => {
         }
 
         return Math.floor(
-          1000000 / (consumables[0] * consumables[1] * 24 * starship.MGLT)
+          parseInt(distanceStr) /
+            (consumables[0] * consumables[1] * 24 * starship.MGLT)
         );
       } else if (consumables[1] === "hours") {
         return Math.floor(
-          1000000 / (consumables[0] * consumables[1] * starship.MGLT)
+          parseInt(distanceStr) /
+            (consumables[0] * consumables[1] * starship.MGLT)
         );
       }
     } else {
-      return "Unknown";
+      return "Impossível calcular";
     }
   };
 
@@ -80,16 +94,45 @@ const StarshipsList = () => {
   // DOM
   return (
     <Container>
-      {state.canShow &&
-        state.starshipsList.map(
+      <GetDistanceWrapper>
+        <GetDistance
+          onSubmit={(e) => {
+            e.persist();
+            e.preventDefault();
+
+            setDistanceStr(() => {
+              const el: any = document.querySelector("[name=distance]");
+              const val = parseInt(el?.value);
+
+              if (!isNaN(val)) {
+                return `${parseInt(el?.value)}`;
+              } else {
+                return "";
+              }
+            });
+          }}
+        >
+          <GetDistanceInput
+            name="distance"
+            placeholder="Quantos MLGTs deseja percorrer? (Apenas números)"
+          />
+
+          <GetDistanceSubmit>GO!</GetDistanceSubmit>
+        </GetDistance>
+      </GetDistanceWrapper>
+
+      <StarshipsListWrapper isVisible={!!(state.canShow && distanceStr)}>
+        {state.starshipsList.map(
           (starshipItem: any, starshipItemKey: number) => {
             return (
-              <div key={`starship-item-${starshipItemKey}`}>{`${
-                starshipItem.name
-              }: ${getStops(starshipItem)}`}</div>
+              <StarshipItem key={`starship-item-${starshipItemKey}`}>
+                {`${starshipItem.name}: `}
+                <span>{`${getStops(starshipItem)} paradas necessárias`}</span>
+              </StarshipItem>
             );
           }
         )}
+      </StarshipsListWrapper>
     </Container>
   );
 };
